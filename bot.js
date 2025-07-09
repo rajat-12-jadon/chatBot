@@ -1,16 +1,27 @@
 import { GoogleGenAI } from "@google/genai";
 import readlineSync from 'readline-sync';
+import dotenv from 'dotenv';
 
-const ai = new GoogleGenAI({ apiKey: "" });
+// Load environment variables from .env file
+dotenv.config();
 
-const History = []
+// Securely load the API key
+const apiKey = process.env.GOOGLE_API_KEY;
+
+if (!apiKey) {
+  console.error("❌ GOOGLE_API_KEY is missing. Please set it in your .env file.");
+  process.exit(1);
+}
+
+const ai = new GoogleGenAI({ apiKey });
+
+const History = [];
 
 async function Chatting(userProblem) {
-
   History.push({
-    role:'user',
-    parts:[{text:userProblem}]
-  })
+    role: 'user',
+    parts: [{ text: userProblem }]
+  });
 
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash",
@@ -39,24 +50,20 @@ Your tone = supportive, frank, witty, and full of mentorship + memes energy 😎
       `,
     },
   });
-  
 
   History.push({
-    role:'model',
-    parts:[{text:response.text}]
-  })
-  
+    role: 'model',
+    parts: [{ text: response.text }]
+  });
+
   console.log("\n");
   console.log(response.text);
 }
 
-
-async function main(){
-   
-   const userProblem = readlineSync.question("Ask me anything--> ");
-   await Chatting(userProblem);
-   main();
+async function main() {
+  const userProblem = readlineSync.question("Ask me anything--> ");
+  await Chatting(userProblem);
+  main();
 }
-
 
 main();
